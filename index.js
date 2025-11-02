@@ -35,10 +35,13 @@ const genAI = new GoogleGenerativeAI(apiKey);
 
 // 2. Configure CORS
 const allowedOrigins = [
-  'http://localhost:5500',
-  'http://127.0.0.1:5500',
-  'https://pratik-xi.vercel.app' // ✅ your live frontend URL
+  "http://localhost:5500",
+  "http://127.0.0.1:5500",
+  "https://frontend-seven-omega-51.vercel.app",  // ✅ add this line
+  "https://pratik-xi.vercel.app"                 // keep old one if needed
 ];
+const model = genAI.getGenerativeModel({ model: "models/gemini-1.5-flash" });
+
 
 app.use(cors({
   origin: function (origin, callback) {
