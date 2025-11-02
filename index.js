@@ -1,17 +1,19 @@
 // Import required packages
-import express from 'express';
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import mongoose from "mongoose";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-import dotenv from 'dotenv';
-import cors from 'cors';
-import mongoose from 'mongoose';
+dotenv.config();
+
+const app = express();
+const port = process.env.PORT || 5000;
 
 // Load environment variables
 dotenv.config();
 
-// Initialize Express app
-const app = express();
-const port = process.env.PORT || 5000;
+app.use(express.json());
 
 // --- Configuration ---
 const apiKey = process.env.GEMINI_API_KEY;
@@ -37,8 +39,8 @@ const genAI = new GoogleGenerativeAI(apiKey);
 const allowedOrigins = [
   "http://localhost:5500",
   "http://127.0.0.1:5500",
-  "https://frontend-seven-omega-51.vercel.app",  // ✅ add this line
-  "https://pratik-xi.vercel.app"                 // keep old one if needed
+  "https://frontend-seven-omega-51.vercel.app",
+  "https://pratik-xi.vercel.app",
 ];
 // --- AI Endpoint ---
 app.post('/api/ai', async (req, res) => {
@@ -61,16 +63,18 @@ app.post('/api/ai', async (req, res) => {
 
 
 
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.warn('❌ Blocked by CORS:', origin);
-      callback(new Error('Not allowed by CORS'));
-    }
-  }
-}));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.warn("❌ Blocked by CORS:", origin);
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+  })
+);
 
 
 // 3. Use Express's JSON parser
@@ -92,22 +96,25 @@ const messageSchema = new mongoose.Schema({
 const Message = mongoose.model('Message', messageSchema);
 
 // --- API Endpoints ---
-app.post('/api/ai', async (req, res) => {
+app.post("/api/ai", async (req, res) => {
   try {
     const { prompt } = req.body;
     if (!prompt) {
-      return res.status(400).json({ error: 'Prompt is required' });
+      return res.status(400).json({ error: "Prompt is required" });
     }
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+
+    const model = genAI.getGenerativeModel({ model: "models/gemini-1.5-flash" });
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
-    res.json({ text: text });
+
+    res.json({ text });
   } catch (error) {
-    console.error('AI API Error:', error);
-    res.status(500).json({ error: 'Failed to get AI response' });
+    console.error("AI API Error:", error);
+    res.status(500).json({ error: "Failed to get AI response", details: error.message });
   }
 });
+
 
 app.post('/api/contact', async (req, res) => {
   try {
