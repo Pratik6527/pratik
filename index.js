@@ -40,7 +40,25 @@ const allowedOrigins = [
   "https://frontend-seven-omega-51.vercel.app",  // ✅ add this line
   "https://pratik-xi.vercel.app"                 // keep old one if needed
 ];
-const model = genAI.getGenerativeModel({ model: "models/gemini-1.5-flash" });
+// --- AI Endpoint ---
+app.post('/api/ai', async (req, res) => {
+  try {
+    const { prompt } = req.body;
+    if (!prompt) return res.status(400).json({ error: 'Prompt is required' });
+
+    // Use the correct model path for @google/generative-ai
+    const model = genAI.getGenerativeModel({ model: "models/gemini-1.5-flash" });
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    res.json({ text });
+  } catch (error) {
+    console.error('AI API Error:', error);
+    res.status(500).json({ error: 'Failed to get AI response', details: error.message });
+  }
+});
+
 
 
 app.use(cors({
