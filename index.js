@@ -36,18 +36,21 @@ const genAI = new GoogleGenerativeAI(apiKey);
 // 2. Configure CORS
 const allowedOrigins = [
   'http://localhost:5500',
-  'http://127.0.0.1:5500'
+  'http://127.0.0.1:5500',
+  'https://pratik-xi.vercel.app' // ✅ your live frontend URL
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.warn('❌ Blocked by CORS:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   }
 }));
+
 
 // 3. Use Express's JSON parser
 app.use(express.json());
